@@ -19,27 +19,26 @@ FloatEuclidTransform: cover {
 	scaling: Float
 
 	inverse ::= This new(-this translation, this rotation inverse, 1.0f / this scaling)
-	/*transform ::= FloatTransform3D createScaling(this scaling, this scaling, 1.0f) * FloatTransform3D createTranslation(this translation) * this rotation transform*/
 	transform ::= this toFloatTransform3D()
 
 	toFloatTransform3D: func -> FloatTransform3D {
-		quaternion := this rotation
-		length := quaternion w * quaternion w + quaternion x * quaternion x + quaternion y * quaternion y + quaternion z * quaternion z
+		(x, y, z, w, scale) := (this rotation x, this rotation y, this rotation z, this rotation w, this scaling)
+		length := w * w + x * x + y * y + z * z
 		factor := length == 0.0f ? 0.0f : 2.0f / length
 		FloatTransform3D new(
-			this scaling * (1.0f - factor * (quaternion y * quaternion y + quaternion z * quaternion z)),
-			this scaling * factor * (quaternion x * quaternion y + quaternion z * quaternion w),
-			factor * (quaternion x * quaternion z - quaternion y * quaternion w),
-			this scaling * factor * (quaternion x * quaternion y - quaternion w * quaternion z),
-			this scaling * (1.0f - factor * (quaternion x * quaternion x + quaternion z * quaternion z)),
-			factor * (quaternion y * quaternion z + quaternion w * quaternion x),
-			this scaling * factor * (quaternion x * quaternion z + quaternion w * quaternion y),
-			this scaling * factor * (quaternion y * quaternion z - quaternion w * quaternion x),
-			1.0f - factor * (quaternion x * quaternion x + quaternion y * quaternion y),
-			this scaling * this translation x,
-			this scaling * this translation y,
+			scale * (1 - factor * (y * y + z * z)),
+			scale * factor * (x * y + z * w),
+			factor * (x * z - y * w),
+			scale * factor * (x * y - w * z),
+			scale * (1 - factor * (x * x + z * z)),
+			factor * (y * z + w * x),
+			scale * factor * (x * z + w * y),
+			scale * factor * (y * z - w * x),
+			1 - factor * (x * x + y * y),
+			scale * this translation x,
+			scale * this translation y,
 			this translation z
-			)
+		)
 	}
 
 	init: func@ ~default (scale := 1.0f) { this init(FloatVector3D new(), Quaternion identity, scale) }
